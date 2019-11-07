@@ -3,6 +3,7 @@ package bhx
 import (
 	"bytes"
 	"encoding/hex"
+	mrand "math/rand"
 	"fmt"
 	"io"
 	"math/big"
@@ -80,6 +81,31 @@ func (h Hash256) SetBigInt(i *big.Int) Hash256 {
 	copy(buf, i.Bytes())
 	copy(h[:], buf)
 	return h
+}
+
+// SortHash256 sorts 256-bit hashes
+func SortHash256(a []Hash256) []Hash256 {
+	if len(a) < 2 {
+		return a
+	}
+
+	l, r := 0, len(a)-1
+
+	pivIndex := mrand.Int() % len(a)
+
+	a[pivIndex], a[r] = a[r], a[pivIndex]
+	for i := range a {
+		if a[i].ToBigInt().Cmp(a[r].ToBigInt()) < 0 {
+			a[i], a[l] = a[l], a[i]
+			l++
+		}
+	}
+
+	a[l], a[r] = a[r], a[l]
+	SortHash256(a[:l])
+	SortHash256(a[l+1:])
+
+	return a
 }
 
 // FileSha256 returns SHA3-256 hash of given file
